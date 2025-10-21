@@ -424,13 +424,13 @@ class BeichtBot(commands.Bot):
             LOGGER.warning("AI moderation enabled but OPENAI_API_KEY not set.")
             return False
         try:
-            import openai
+            from openai import AsyncOpenAI
         except ImportError:
             LOGGER.exception("openai package not installed.")
             return False
-        openai.api_key = api_key
+        client = AsyncOpenAI(api_key=api_key)
         try:
-            response = await openai.ChatCompletion.acreate(
+            response = await client.chat.completions.create(
                 model=AI_MODEL,
                 messages=[
                     {"role": "system", "content": "Analysiere den Text auf Krisensituationen."},
@@ -438,7 +438,8 @@ class BeichtBot(commands.Bot):
                 ],
                 max_tokens=10,
             )
-            content = response.choices[0].message["content"].lower()
+            choice = response.choices[0]
+            content = (choice.message.content or "").lower()
             return any(keyword in content for keyword in ["ja", "crisis", "risk"])
         except Exception as exc:
             LOGGER.exception("AI moderation failed: %s", exc)
