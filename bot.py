@@ -20,9 +20,30 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+def load_env_file(path: Path = Path(".env")) -> None:
+    """Load environment variables from a .env file if present."""
+
+    if not path.exists():
+        return
+
+    try:
+        for raw_line in path.read_text(encoding="utf-8").splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            key = key.strip()
+            if not key or key in os.environ:
+                continue
+            value = value.strip().strip('"').strip("'")
+            os.environ[key] = value
+    except OSError as exc:
+        logging.getLogger("beichtbot").warning("Konnte .env-Datei nicht lesen: %s", exc)
 
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger("beichtbot")
+
+load_env_file()
 
 CONFIG_FILE = Path("beichtbot_config.json")
 DEFAULT_SECRET = os.environ.get("BEICHTBOT_SECRET", "beichtbot-secret")
