@@ -197,7 +197,6 @@ class BeichtBot(commands.Bot):
         intents.message_content = False
         intents.members = False
         super().__init__(command_prefix="!", intents=intents)
-        self.tree = app_commands.CommandTree(self)
         self.config_store = GuildConfigStore(CONFIG_FILE)
         self.cooldowns: Dict[int, Dict[int, dt.datetime]] = {}
 
